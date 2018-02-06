@@ -136,7 +136,7 @@ static int weft_recv(struct device *dev, uint32_t len, uint8_t data[])
         weft_close();
     } else if (data[0] == 0 || data[0] == '0'){
         // blinky_timer_start();
-        weft_init_and_go();
+        weft_open();
     } else {
         return 0;
     }
@@ -149,11 +149,12 @@ static int weft_open(struct weftDevice *dev){
 
 static int weft_close(struct weftDevice *dev){
 
+=======
+static int weft_shutdown(){
     return 0;
 }
 
 static int weft_init_and_go(){
-    
     return 0;
 }
 
@@ -194,4 +195,3 @@ struct device_driver mods_raw_blinky_driver = {
     .desc = "weftDEMO i2c Interface",
     .ops = &weft_driver_ops,
 };
- 
