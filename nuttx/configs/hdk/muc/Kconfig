@@ -56,6 +56,14 @@ config MODS_RAW_BLINKY
 	---help---
 		Enable Blinky LED Raw support
 
+config MODS_WEFT
+	bool "WEFT Co. experimental support"
+	default n
+	depends on GREYBUS_RAW
+	select DEVICE_CORE
+	---help---
+		Enable WEFT Co. Experimental v02 Raw support
+
 config MODS_RAW_TERMAPP
 	bool "Enable termapp driver"
 	default n

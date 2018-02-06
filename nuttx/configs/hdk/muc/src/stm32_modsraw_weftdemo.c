@@ -40,7 +40,27 @@
 #include <nuttx/device_raw.h>
 #include <nuttx/power/pm.h>
 
+#include <nuttx/i2c.h>
+#include <nuttx/kmalloc.h>
+#include <nuttx/util.h>
+
 #include "stm32_tim.h"
+
+#define DRV2667_ADDR 0x59 //The DRV2667 Chip default I2C address.
+#define REG_GAINS 0x01
+#define REG_CTRL 0x02
+#define REG_WAVEFORM0 0x03
+#define REG_WAVEFORM1 0x04
+#define REG_WAVEFORM2 0x05
+#define REG_WAVEFORM3 0x06
+#define REG_WAVEFORM4 0x07
+#define REG_WAVEFORM5 0x08
+#define REG_WAVEFORM6 0x09
+#define REG_WAVEFORM7 0x0A
+#define BOOST_AMP_ENABLED 0x02
+#define RESET_DEVICE 0x80
+#define STANDBY_ON 0x40
+#define STANDBY_OFF 0x00
 
 #define BLINKY_ACTIVITY    10
 #define BLINKY_TIM          6
@@ -72,7 +92,7 @@ static void blinky_timer_start(void)
     gpio_set_value(GPIO_MODS_DEMO_ENABLE, 1);
 
     if (!tim_dev) {
-        dbg("BLINKY\n");
+        dbg("weftDEMO\n");
 
         tim_dev = stm32_tim_init(BLINKY_TIM);
 
@@ -84,7 +104,7 @@ static void blinky_timer_start(void)
         STM32_TIM_SETISR(tim_dev, blinky_timer_handler, 0);
         STM32_TIM_ENABLEINT(tim_dev, 0);
     } else {
-        dbg("ignore\n");
+        dbg("weftDEMO ignore\n");
     }
 }
 
@@ -93,7 +113,7 @@ static void blinky_timer_stop(void)
     gpio_set_value(GPIO_MODS_DEMO_ENABLE, 0);
 
     if (tim_dev) {
-        dbg("STOP\n");
+        dbg("weftDEMO STOP\n");
 
         STM32_TIM_DISABLEINT(tim_dev, 0);
         stm32_tim_deinit(tim_dev);
@@ -102,57 +122,76 @@ static void blinky_timer_stop(void)
         gpio_set_value(GPIO_MODS_LED_DRV_3, LED_OFF);
         gpio_set_value(GPIO_MODS_DEMO_ENABLE, LED_OFF);
     } else {
-        dbg("ignore\n");
+        dbg("weftDEMO ignore\n");
     }
 }
 
-static int blinky_recv(struct device *dev, uint32_t len, uint8_t data[])
+static int weft_recv(struct device *dev, uint32_t len, uint8_t data[])
 {
     if (len == 0)
         return -EINVAL;
 
-    if (data[0] == 0 || data[0] == '0')
-        blinky_timer_stop();
-    else
-        blinky_timer_start();
+    if (data[0] == 0 || data[0] == '0'){
+        // blinky_timer_stop();
+        weft_close();
+    } else if (data[0] == 0 || data[0] == '0'){
+        // blinky_timer_start();
+        weft_init_and_go();
+    } else {
+        return 0;
+    }
+}
+
+static int weft_open(struct weftDevice *dev){
 
     return 0;
 }
 
-static int blinky_register_callback(struct device *dev,
+static int weft_close(struct weftDevice *dev){
+
+    return 0;
+}
+
+static int weft_init_and_go(){
+    
+    return 0;
+}
+
+static int weft_register_callback(struct device *dev,
                                     raw_send_callback callback)
 {
     /* Nothing to do */
     return 0;
 }
 
-static int blinky_unregister_callback(struct device *dev)
+static int weft_unregister_callback(struct device *dev)
 {
     /* Nothing to do */
     return 0;
 }
 
-static int blinky_probe(struct device *dev)
+static int weft_probe(struct device *dev)
 {
     gpio_direction_out(GPIO_MODS_LED_DRV_3, LED_OFF);
     gpio_direction_out(GPIO_MODS_DEMO_ENABLE, 0);
     return 0;
 }
 
-static struct device_raw_type_ops blinky_type_ops = {
-    .recv = blinky_recv,
-    .register_callback = blinky_register_callback,
-    .unregister_callback = blinky_unregister_callback,
+static struct device_raw_type_ops weft_type_ops = {
+    .recv = weft_recv,
+    .register_callback = weft_register_callback,
+    .unregister_callback = weft_unregister_callback,
 };
 
-static struct device_driver_ops blinky_driver_ops = {
-    .probe = blinky_probe,
-    .type_ops = &blinky_type_ops,
+static struct device_driver_ops weft_driver_ops = {
+    .probe = weft_probe,
+    .type_ops = &weft_type_ops,
 };
 
 struct device_driver mods_raw_blinky_driver = {
     .type = DEVICE_TYPE_RAW_HW,
-    .name = "mods_raw_blinky",
-    .desc = "Blinky LED Raw AKA Interface",
-    .ops = &blinky_driver_ops,
+    .name = "mods_raw_weftdemo",
+    .desc = "weftDEMO i2c Interface",
+    .ops = &weft_driver_ops,
 };
+ 
